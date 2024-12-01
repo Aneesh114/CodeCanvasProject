@@ -1,10 +1,19 @@
 {
-    "version": 2,
-    "functions": {
-      "app/api/execute/route.ts": {
-        "maxDuration": 10,
-        "runtime": "@vercel/python@3.1.0"
-      }
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/python/index.py",
+      "use": "@vercel/python"
     },
-    "buildCommand": "next build"
-  }
+    {
+      "src": "package.json",
+      "use": "@vercel/next"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/python",
+      "dest": "api/python/index.py"
+    }
+  ]
+}
