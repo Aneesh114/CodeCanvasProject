@@ -1,14 +1,10 @@
 {
     "version": 2,
-    "builds": [
-      {
-        "src": "package.json",
-        "use": "@vercel/next"
-      }
-    ],
     "functions": {
-      "api/execute/route.ts": {
+      "app/api/execute/route.ts": {
+        "maxDuration": 10,
         "runtime": "@vercel/python@3.1.0"
       }
-    }
+    },
+    "buildCommand": "next build"
   }
