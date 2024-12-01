@@ -207,13 +207,14 @@ export const CollaborativeEditor: React.FC<CollaborativeEditorProps> = ({
     setElement(node);
   }, []);
 
+ 
   const handleCompile = async (retryAttempt = 0) => {
     if (!editorViewRef.current) return;
     
     const code = editorViewRef.current.state.doc.toString();
     if (!code.trim()) {
       updateCompilationState({
-        output: "Error: No code to compile",
+        output: "Error: No code provided",
         compiledBy: userInfo.name,
         timestamp: Date.now()
       });
@@ -260,7 +261,7 @@ export const CollaborativeEditor: React.FC<CollaborativeEditorProps> = ({
       }
   
       updateCompilationState({
-        output: `Error: ${error}`,
+        output: error instanceof Error ? error.message : 'Unknown error occurred',
         compiledBy: userInfo.name,
         timestamp: Date.now()
       });
@@ -268,6 +269,7 @@ export const CollaborativeEditor: React.FC<CollaborativeEditorProps> = ({
       setIsCompiling(false);
     }
   };
+
   useEffect(() => {
     if (!element || !room || !userInfo) return;
 

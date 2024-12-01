@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { spawn } from 'child_process';
+import * as path from 'path';
+import { writeFile } from 'fs/promises';
+import { randomUUID } from 'crypto';
 
-export const runtime = 'edge';
+// Change runtime to nodejs
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,7 +20,48 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-      const result = await executePythonCode(code);
+      // Create a temporary file name
+      const fileName = `temp_${randomUUID()}.py`;
+      const filePath = path.join(process.cwd(), 'temp', fileName);
+
+      // Write the Python code to a temporary file
+      await writeFile(filePath, code);
+
+      // Execute the Python code
+      const result = await new Promise<string>((resolve, reject) => {
+        let output = '';
+        let errorOutput = '';
+
+        const pythonProcess = spawn('python', [filePath]);
+
+        pythonProcess.stdout.on('data', (data) => {
+          output += data.toString();
+        });
+
+        pythonProcess.stderr.on('data', (data) => {
+          errorOutput += data.toString();
+        });
+
+        pythonProcess.on('close', (code) => {
+          if (code !== 0) {
+            reject(new Error(errorOutput || 'Execution failed'));
+          } else {
+            resolve(output);
+          }
+        });
+
+        // Handle process errors
+        pythonProcess.on('error', (error) => {
+          reject(new Error(`Process error: ${error.message}`));
+        });
+
+        // Set timeout
+        setTimeout(() => {
+          pythonProcess.kill();
+          reject(new Error('Execution timeout'));
+        }, 10000); // 10 second timeout
+      });
+
       return NextResponse.json(
         { output: result },
         { 
@@ -51,32 +98,4 @@ export async function OPTIONS() {
       'Access-Control-Allow-Headers': 'Content-Type',
     },
   });
-}
-
-async function executePythonCode(code: string): Promise<string> {
-  const context = {
-    print: console.log,
-  };
-
-  try {
-    let output = '';
-    const originalLog = console.log;
-    console.log = (...args) => {
-      output += args.join(' ') + '\n';
-    };
-
-    const result = new Function('context', `
-      with (context) {
-        ${code}
-      }
-    `)(context);
-
-    console.log = originalLog;
-
-    return output || String(result);
-  } catch (err) {
-    // Properly type the error and extract message
-    const errorMessage = err instanceof Error ? err.message : String(err);
-    throw new Error(errorMessage);
-  }
 }
