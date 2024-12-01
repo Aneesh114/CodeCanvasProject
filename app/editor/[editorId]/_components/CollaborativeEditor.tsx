@@ -54,7 +54,6 @@ interface UserInfo {
 interface CollaborativeEditorProps {
   documentId: string;
   defaultValue?: string;
- 
 }
 
 interface CompilationStateStorage {
@@ -139,10 +138,10 @@ export const CollaborativeEditor: React.FC<CollaborativeEditorProps> = ({
   const [chatMessage, setChatMessage] = useState("");
 
   const userInfo = useSelf((me) => me.info) as UserInfo;
-  
+
   const compilationState = useStorage((root) => root.compilationState);
   const messages = useStorage((root) => root.messages);
-  
+
   const initializeStorage = useMutation(({ storage }) => {
     // Initialize compilation state
     const existing = storage.get('compilationState');
@@ -153,7 +152,7 @@ export const CollaborativeEditor: React.FC<CollaborativeEditorProps> = ({
         timestamp: Date.now()
       }));
     }
-    
+
     // Initialize messages if they don't exist
     const existingMessages = storage.get('messages');
     if (!existingMessages) {
@@ -207,61 +206,66 @@ export const CollaborativeEditor: React.FC<CollaborativeEditorProps> = ({
     setElement(node);
   }, []);
 
- 
   const handleCompile = async (retryAttempt = 0) => {
     if (!editorViewRef.current) return;
-    
+
     const code = editorViewRef.current.state.doc.toString();
     if (!code.trim()) {
       updateCompilationState({
-        output: "Error: No code provided",
+        output: "Error: No code to compile",
         compiledBy: userInfo.name,
         timestamp: Date.now()
       });
       return;
     }
-  
+
     setIsCompiling(true);
     try {
       updateCompilationState({
-        output: "Running code...",
+        output: "Compiling...",
         compiledBy: userInfo.name,
         timestamp: Date.now()
       });
-  
-      const response = await fetch('/api/execute', {
+
+      // Use relative path for API endpoint
+      const apiUrl = process.env.NODE_ENV === 'production' 
+        ? '/api/execute'
+        : 'http://localhost:5000/execute';
+
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ code }),
+        body: JSON.stringify({
+          code,
+          language: 'python'
+        }),
       });
-  
-      const data = await response.json();
-      
-      if (response.ok) {
-        updateCompilationState({
-          output: data.output,
-          compiledBy: userInfo.name,
-          timestamp: Date.now()
-        });
-      } else {
-        throw new Error(data.error || 'Failed to execute code');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-  
+      const data = await response.json();
+
+      updateCompilationState({
+        output: data.output || data.error || 'Unknown error occurred',
+        compiledBy: userInfo.name,
+        timestamp: Date.now()
+      });
+
       setRetryCount(0);
-      
+
     } catch (error) {
       console.error('Compilation error:', error);
-      
+
       if (retryAttempt < MAX_RETRIES) {
         setRetryCount(retryAttempt + 1);
         setTimeout(() => handleCompile(retryAttempt + 1), RETRY_DELAY * (retryAttempt + 1));
         return;
       }
-  
+
       updateCompilationState({
-        output: error instanceof Error ? error.message : 'Unknown error occurred',
+        output: `Error: Unable to compile code. Please try again. ${(error as Error).message}`,
         compiledBy: userInfo.name,
         timestamp: Date.now()
       });
@@ -282,11 +286,11 @@ export const CollaborativeEditor: React.FC<CollaborativeEditorProps> = ({
       ydoc = new Y.Doc();
       provider = new LiveblocksYjsProvider(room as Room, ydoc);
       const ytext = ydoc.getText("codemirror");
-      
+
       if (defaultValue && ytext.toString() === '') {
         ytext.insert(0, defaultValue);
       }
-      
+
       const undoManager = new Y.UndoManager(ytext);
       setYUndoManager(undoManager);
 
@@ -404,5 +408,4 @@ export const CollaborativeEditor: React.FC<CollaborativeEditorProps> = ({
         </div>
       </div>
     </div>
-  );
-};
+  )};
