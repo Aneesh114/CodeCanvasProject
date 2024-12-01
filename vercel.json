@@ -4,10 +4,6 @@
       {
         "src": "app/editor/api/execute.py",
         "use": "@vercel/python"
-      },
-      {
-        "src": "package.json",
-        "use": "@vercel/next"
       }
     ],
     "routes": [
@@ -15,10 +11,6 @@
         "src": "/api/execute",
         "methods": ["POST", "OPTIONS"],
         "dest": "app/editor/api/execute.py"
-      },
-      {
-        "src": "/(.*)",
-        "dest": "/"
       }
     ]
   }
