@@ -229,8 +229,7 @@ export const CollaborativeEditor: React.FC<CollaborativeEditorProps> = ({
         timestamp: Date.now()
       });
   
-      // Update the endpoint to use the Python serverless function
-      const response = await fetch('/api/python', {
+      const response = await fetch('/api/execute', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -239,9 +238,10 @@ export const CollaborativeEditor: React.FC<CollaborativeEditorProps> = ({
       });
   
       const data = await response.json();
-  
-      if (!data.success) {
-        throw new Error(data.error || 'Unknown error occurred');
+      
+      // Check if there's an error in the response
+      if (data.error) {
+        throw new Error(data.error);
       }
       
       updateCompilationState({
