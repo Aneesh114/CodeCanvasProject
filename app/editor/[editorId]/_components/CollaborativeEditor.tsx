@@ -224,7 +224,7 @@ export const CollaborativeEditor: React.FC<CollaborativeEditorProps> = ({
     setIsCompiling(true);
     try {
       updateCompilationState({
-        output: "Compiling...",
+        output: "Running code...",
         compiledBy: userInfo.name,
         timestamp: Date.now()
       });
@@ -239,16 +239,15 @@ export const CollaborativeEditor: React.FC<CollaborativeEditorProps> = ({
   
       const data = await response.json();
       
-      // Check if there's an error in the response
-      if (data.error) {
-        throw new Error(data.error);
+      if (response.ok) {
+        updateCompilationState({
+          output: data.output,
+          compiledBy: userInfo.name,
+          timestamp: Date.now()
+        });
+      } else {
+        throw new Error(data.error || 'Failed to execute code');
       }
-      
-      updateCompilationState({
-        output: data.output || 'No output',
-        compiledBy: userInfo.name,
-        timestamp: Date.now()
-      });
   
       setRetryCount(0);
       

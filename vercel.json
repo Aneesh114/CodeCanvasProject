@@ -3,6 +3,7 @@
   "functions": {
     "api/execute.py": {
       "runtime": "@vercel/python@3.1.0",
+      "memory": 1024,
       "maxDuration": 10
     }
   },
@@ -11,5 +12,8 @@
       "src": "/api/execute",
       "dest": "/api/execute.py"
     }
-  ]
+  ],
+  "env": {
+    "PYTHON_VERSION": "3.9"
+  }
 }
