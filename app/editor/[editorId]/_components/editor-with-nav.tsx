@@ -23,7 +23,7 @@ export const EditorWithNav: React.FC<EditorWithNavProps> = ({ documentId }) => {
       <CollaborativeEditor 
         documentId={documentId}
         defaultValue={document.content}
-        defaultLanguage={document.language}
+       // defaultLanguage={document.language}
       />
     </div>
   );

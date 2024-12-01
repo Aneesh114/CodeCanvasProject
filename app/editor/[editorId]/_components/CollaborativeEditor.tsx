@@ -54,7 +54,7 @@ interface UserInfo {
 interface CollaborativeEditorProps {
   documentId: string;
   defaultValue?: string;
-  defaultLanguage?: string;
+ 
 }
 
 interface CompilationStateStorage {
@@ -243,10 +243,10 @@ export const CollaborativeEditor: React.FC<CollaborativeEditorProps> = ({
           language: 'python'
         }),
       });
-      /*
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
-      }*/
+      }
 
       const data = await response.json();
       
