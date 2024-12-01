@@ -23,7 +23,7 @@ def run_code(code):
                         "Content-Type": "application/json",
                         "Access-Control-Allow-Origin": "*",
                         "Access-Control-Allow-Methods": "POST, OPTIONS",
-                        "Access-Control-Allow-Headers": "Content-Type",
+                        "Access-Control-Allow-Headers": "Content-Type"
                     }
                 }
             except Exception as e:
@@ -35,7 +35,7 @@ def run_code(code):
                         "Content-Type": "application/json",
                         "Access-Control-Allow-Origin": "*",
                         "Access-Control-Allow-Methods": "POST, OPTIONS",
-                        "Access-Control-Allow-Headers": "Content-Type",
+                        "Access-Control-Allow-Headers": "Content-Type"
                     }
                 }
     except Exception as e:
@@ -49,7 +49,7 @@ def run_code(code):
                 "Content-Type": "application/json",
                 "Access-Control-Allow-Origin": "*",
                 "Access-Control-Allow-Methods": "POST, OPTIONS",
-                "Access-Control-Allow-Headers": "Content-Type",
+                "Access-Control-Allow-Headers": "Content-Type"
             }
         }
 
@@ -60,7 +60,7 @@ def handler(request):
             "headers": {
                 "Access-Control-Allow-Origin": "*",
                 "Access-Control-Allow-Methods": "POST, OPTIONS",
-                "Access-Control-Allow-Headers": "Content-Type",
+                "Access-Control-Allow-Headers": "Content-Type"
             }
         }
     
@@ -92,6 +92,7 @@ def handler(request):
             "headers": {"Content-Type": "application/json"}
         }
 
+# Handler for Vercel
 class VercelHandler(BaseHTTPRequestHandler):
     def do_POST(self):
         content_length = int(self.headers.get('Content-Length', 0))
