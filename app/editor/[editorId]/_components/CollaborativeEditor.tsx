@@ -230,7 +230,7 @@ export const CollaborativeEditor: React.FC<CollaborativeEditorProps> = ({
       // Use relative path for API endpoint
       const apiUrl = process.env.NODE_ENV === 'production' 
         ? '/api/execute'
-        : 'http://localhost:5000/execute';
+        : 'http://18.219.202.24:5000/execute';
 
       const response = await fetch(apiUrl, {
         method: 'POST',

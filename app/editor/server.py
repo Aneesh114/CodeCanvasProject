@@ -119,7 +119,7 @@ def index():
     })
 
 if __name__ == '__main__':
-    print(f"Development server starting on http://localhost:5000")
+    print(f"Development server starting on http://18.219.202.24:5000")
     print(f"Working directory: {TEMP_DIR}")
     print(f"Temp directory exists: {os.path.exists(TEMP_DIR)}")
     print(f"Temp directory is writable: {os.access(TEMP_DIR, os.W_OK)}")
