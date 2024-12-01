@@ -219,7 +219,7 @@ export const CollaborativeEditor: React.FC<CollaborativeEditorProps> = ({
       });
       return;
     }
-
+  
     setIsCompiling(true);
     try {
       updateCompilationState({
@@ -227,35 +227,27 @@ export const CollaborativeEditor: React.FC<CollaborativeEditorProps> = ({
         compiledBy: userInfo.name,
         timestamp: Date.now()
       });
-
-      // Use relative path for API endpoint
-      const apiUrl = process.env.NODE_ENV === 'production' 
-        ? '/api/execute'
-        : 'http://localhost:5000/execute';
-
-      const response = await fetch(apiUrl, {
+  
+      const response = await fetch('/api/execute', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          code,
-          language: 'python'
-        }),
+        body: JSON.stringify({ code }),
       });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
+  
       const data = await response.json();
+  
+      if (!response.ok) {
+        throw new Error(data.error || `HTTP error! status: ${response.status}`);
+      }
       
       updateCompilationState({
-        output: data.output || data.error || 'Unknown error occurred',
+        output: data.output || 'No output',
         compiledBy: userInfo.name,
         timestamp: Date.now()
       });
-
+  
       setRetryCount(0);
       
     } catch (error) {
@@ -266,9 +258,9 @@ export const CollaborativeEditor: React.FC<CollaborativeEditorProps> = ({
         setTimeout(() => handleCompile(retryAttempt + 1), RETRY_DELAY * (retryAttempt + 1));
         return;
       }
-
+  
       updateCompilationState({
-        output: `Error: Unable to compile code. Please try again. ${(error as Error).message}`,
+        output: `Error: ${error}`,
         compiledBy: userInfo.name,
         timestamp: Date.now()
       });
@@ -276,7 +268,6 @@ export const CollaborativeEditor: React.FC<CollaborativeEditorProps> = ({
       setIsCompiling(false);
     }
   };
-
   useEffect(() => {
     if (!element || !room || !userInfo) return;
 
