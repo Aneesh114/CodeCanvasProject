@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { spawn } from 'child_process';
-import * as path from 'path';
-import { writeFile } from 'fs/promises';
-import { randomUUID } from 'crypto';
 
-// Change runtime to nodejs
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
@@ -20,48 +16,7 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-      // Create a temporary file name
-      const fileName = `temp_${randomUUID()}.py`;
-      const filePath = path.join(process.cwd(), 'temp', fileName);
-
-      // Write the Python code to a temporary file
-      await writeFile(filePath, code);
-
-      // Execute the Python code
-      const result = await new Promise<string>((resolve, reject) => {
-        let output = '';
-        let errorOutput = '';
-
-        const pythonProcess = spawn('python', [filePath]);
-
-        pythonProcess.stdout.on('data', (data) => {
-          output += data.toString();
-        });
-
-        pythonProcess.stderr.on('data', (data) => {
-          errorOutput += data.toString();
-        });
-
-        pythonProcess.on('close', (code) => {
-          if (code !== 0) {
-            reject(new Error(errorOutput || 'Execution failed'));
-          } else {
-            resolve(output);
-          }
-        });
-
-        // Handle process errors
-        pythonProcess.on('error', (error) => {
-          reject(new Error(`Process error: ${error.message}`));
-        });
-
-        // Set timeout
-        setTimeout(() => {
-          pythonProcess.kill();
-          reject(new Error('Execution timeout'));
-        }, 10000); // 10 second timeout
-      });
-
+      const result = await executePythonCode(code);
       return NextResponse.json(
         { output: result },
         { 
@@ -87,6 +42,45 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+async function executePythonCode(code: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    let output = '';
+    let errorOutput = '';
+
+    // Spawn Python process and pass code directly through stdin
+    const pythonProcess = spawn('python', ['-c', code]);
+
+    pythonProcess.stdout.on('data', (data) => {
+      output += data.toString();
+    });
+
+    pythonProcess.stderr.on('data', (data) => {
+      errorOutput += data.toString();
+    });
+
+    pythonProcess.on('close', (code) => {
+      if (code !== 0) {
+        reject(new Error(errorOutput || 'Execution failed'));
+      } else {
+        resolve(output);
+      }
+    });
+
+    pythonProcess.on('error', (error) => {
+      reject(new Error(`Process error: ${error.message}`));
+    });
+
+    // Set timeout
+    const timeout = setTimeout(() => {
+      pythonProcess.kill();
+      reject(new Error('Execution timeout'));
+    }, 10000);
+
+    // Clear timeout when process ends
+    pythonProcess.on('close', () => clearTimeout(timeout));
+  });
 }
 
 export async function OPTIONS() {
