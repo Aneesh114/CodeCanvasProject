@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export const runtime = 'edge'; // Optional: Use edge runtime for better performance
+export const runtime = 'edge';
 
 export async function POST(req: NextRequest) {
   try {
@@ -13,7 +13,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Execute the Python code in a safe environment
     try {
       const result = await executePythonCode(code);
       return NextResponse.json(
@@ -28,20 +27,22 @@ export async function POST(req: NextRequest) {
         }
       );
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown execution error';
       return NextResponse.json(
-        { error: `Execution error: ${error}` },
+        { error: `Execution error: ${errorMessage}` },
         { status: 400 }
       );
     }
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown server error';
     return NextResponse.json(
-      { error: `Server error: ${error}` },
+      { error: `Server error: ${errorMessage}` },
       { status: 500 }
     );
   }
 }
 
-export async function OPTIONS(req: NextRequest) {
+export async function OPTIONS() {
   return new NextResponse(null, {
     status: 204,
     headers: {
@@ -53,32 +54,29 @@ export async function OPTIONS(req: NextRequest) {
 }
 
 async function executePythonCode(code: string): Promise<string> {
-  // Create a safe execution environment
   const context = {
     print: console.log,
-    // Add other safe built-ins as needed
   };
 
   try {
     let output = '';
-    // Capture console.log output
     const originalLog = console.log;
     console.log = (...args) => {
       output += args.join(' ') + '\n';
     };
 
-    // Execute the code
     const result = new Function('context', `
       with (context) {
         ${code}
       }
     `)(context);
 
-    // Restore console.log
     console.log = originalLog;
 
     return output || String(result);
-  } catch (error) {
-    throw new Error(error);
+  } catch (err) {
+    // Properly type the error and extract message
+    const errorMessage = err instanceof Error ? err.message : String(err);
+    throw new Error(errorMessage);
   }
 }
