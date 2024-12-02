@@ -53,14 +53,7 @@ export const Navbar = () => {
                 <SearchInput />
             </div>
 
-            {/* Text Editor Button for larger screens, placed after Search Bar */}
-            <div className="hidden lg:flex">
-                <Hint label="Text editor" side="right" sideOffset={10}>
-                    <Button size="icon" variant="board" onClick={onJoinRoomClickText} disabled={pending}>
-                        <Pen />
-                    </Button>
-                </Hint>
-            </div>
+           
             
             {/* Invite Button */}
             {organization && <InviteButton />}
@@ -92,11 +85,7 @@ export const Navbar = () => {
                         },
                     }}
                 />
-                <Hint label="Text editor" side="right" sideOffset={10}>
-                    <Button size="icon" variant="board" onClick={onJoinRoomClickText} disabled={pending}>
-                        <Pen />
-                    </Button>
-                </Hint>
+                
                 
             </div>
         </div>

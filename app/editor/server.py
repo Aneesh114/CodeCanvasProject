@@ -10,7 +10,13 @@ import traceback
 import stat
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={
+    r"/*": {
+        "origins": "*",  # Allow all origins
+        "methods": ["GET", "POST", "OPTIONS"],
+        "allow_headers": "*"  # Allow all headers
+    }
+})
 
 def ensure_temp_directory():
     """Create and ensure proper permissions for temp directory"""
@@ -119,8 +125,8 @@ def index():
     })
 
 if __name__ == '__main__':
-    print(f"Development server starting on http://18.219.202.24:5000")
+    print(f"Development server starting on http://0.0.0.0:5000")
     print(f"Working directory: {TEMP_DIR}")
     print(f"Temp directory exists: {os.path.exists(TEMP_DIR)}")
     print(f"Temp directory is writable: {os.access(TEMP_DIR, os.W_OK)}")
-    app.run(host='127.0.0.1', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
